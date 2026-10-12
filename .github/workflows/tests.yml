@@ -1,0 +1,14 @@
+name: tests
+
+on: [push, pull_request]        # run on every push and every pull request
+
+jobs:
+  test:
+    runs-on: ubuntu-latest       # a fresh Linux machine each time
+    steps:
+      - uses: actions/checkout@v4          # download your code
+      - uses: actions/setup-python@v5      # install Python
+        with:
+          python-version: "3.13"
+      - run: pip install -r requirements.txt pytest
+      - run: pytest -v                     # run every test_*.py file
