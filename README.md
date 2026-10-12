@@ -1,28 +1,24 @@
-# Agentic patterns: Step by step  roadmap to become agentic ai developer
+# Agentic AI patterns from scratch
+![tests](badge-link-here)
 
-01_memory/chat_loop.py  - This projects explains how token cost increases across each turns 
+LLM workflow and agent patterns built with the raw Anthropic API, no frameworks,
+each with tests that use fake LLMs so they run free in CI.
 
-02_chaining/chain_building.py - This project explains about prompt chaining with gates and retries. Here we took the requirement and then converted it to feature file
+| Folder | Pattern | What it shows |
+|---|---|---|
+| 01_memory | Conversation memory | Statelessness; why token cost grows each turn |
+| 02_chaining | Prompt chaining | Steps with a code gate and retry-with-feedback |
+| 03_routing | Routing + structured output | Safety pre-filter, prompt-injection defence, Pydantic validation, safe fallbacks |
 
-03_routing/routing.py - This project explains about Routing, safety pre-filters, prompt injection
-
-04_routing_without_pydantic/routing.py - This project explains about Routing, safety pre-filters, prompt injection with strucutred pydantic outputs
-
-
-
-## Installation
-Clone the repository and install dependencies:
-```bash
-git clone git@github.com:dmairpady/agentic-patterns.git
-cd agentic_patterns
-
+## Run
 pip install -r requirements.txt
+export ANTHROPIC_API_KEY=...
+python 03_routing/routing.py     # real API
+pytest -v                         # fake LLMs, free
 
-Usage
+## Design notes
+- Code, not the LLM, makes business decisions (priority, IDs, fallbacks).
+- The LLM is injected as a function, so every failure path is testable.
 
-Run the main script inside the subfolder by setting the ANTHROPIC_API_KEY in your environment
-
-
-License
-
+## License
 MIT License © 2025 Dhanya
