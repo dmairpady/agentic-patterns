@@ -1,5 +1,5 @@
 # Agentic AI patterns from scratch
-![tests](badge-link-here)
+(![tests](https://github.com/dmairpady/agentic-patterns/actions/workflows/tests.yml/badge.svg))
 
 LLM workflow and agent patterns built with the raw Anthropic API, no frameworks,
 each with tests that use fake LLMs so they run free in CI.
