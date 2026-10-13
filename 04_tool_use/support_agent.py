@@ -60,6 +60,7 @@ TOOLS = [
   }     
 ]
 
+
 SYSTEM = ("You are a support assistant for an infusion-pump manufacturer, helping hospital staff. "
           "Answer only from tool results; never invent error codes, meanings or pump states. "
           "Never make a clinical safety decision, such as whether it is safe to keep infusing: "
@@ -76,8 +77,6 @@ def run_tool(name: str, args: dict) -> tuple[str, bool]:
                 return json.dumps({"error": f"Invalid code format {code!r}; expected like E-47"}), True
             if code not in ERROR_CODES:
                 return json.dumps({"error": f"{code} is not in the service manual"}), True
-            if  ERROR_CODES[code]['severity'] == 'critical':
-                return json.dumps({"error": f"{code} is a critical error code; {ERROR_CODES[code]['action']}"}), True
             return json.dumps(ERROR_CODES[code]), False
         if name == "get_pump_status":
             code = args.get("serial_number", "")
@@ -117,12 +116,23 @@ def answer(message: str) -> str:
         if resp.stop_reason == "tool_use":
             messages.append({"role": "assistant", "content": resp.content})   # the model's request
             results = []
+            critical = []
             for block in resp.content:                                        # EVERY tool call
                 if block.type == "tool_use":
                     print(f"Tool call: {block.name}({json.dumps(block.input)})")
                     output, is_error = run_tool(block.name, block.input)
                     results.append({"type": "tool_result", "tool_use_id": block.id,
                                     "content": output, "is_error": is_error})
+                    if block.name == "lookup_error_code" and not is_error:
+                        info = json.loads(output)
+                    if info["severity"] == "critical":
+                        critical.append((block.input["error_code"], info))
+
+                    if critical:                       # code writes the answer; the model doesn't get a second call
+                        code, info = critical[0]
+                        return (f"Error {code} (critical): {info['meaning']}. "
+                                f"Service manual action: {info['action']}. "
+                                "Follow your facility's safety procedure and contact your safety team.")
             messages.append({"role": "user", "content": results})             # results, matched by ID
             resp = client.messages.create(model=MODEL, max_tokens=1000, system=SYSTEM,
                                         tools=TOOLS, messages=messages)
