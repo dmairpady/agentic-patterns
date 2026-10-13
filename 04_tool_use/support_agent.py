@@ -10,7 +10,7 @@ ERROR_CODES = {"E-47": {"meaning": "Air in line detected", "severity": "critical
 PUMPS = {"SN-4471": {"state": "stopped", "alarms": ["E-47"], "battery": "62%"}}
 TICKETS = []
 
-SYSTEM = "You are a software agent that can read and write to the system state. Do not make up any information and take any clinical safety decision. If you don't know the answer, say 'I don't know'."
+
 MODEL = "claude-haiku-4-5-20251001"
 TOOLS = [
     {
@@ -60,26 +60,6 @@ TOOLS = [
   }     
 ]
 
-def lookup_error_code(error_code):
-    """Look up what a pump error code means: its meaning, severity (low/high/critical) and recommended action from the service manual. Use when the user mentions a code shown on a pump display, such as E-47. This does NOT check a live pump; use get_pump_status for that."""
-    return ERROR_CODES.get(error_code, {"meaning": "Unknown error code", "severity": "unknown", "action": "N/A"})
-
-def get_pump_status(serial_number):
-    """Get the current status of a pump, including its state (infusing/stopped), any active alarms, and battery level. Use when the user mentions a specific pump by serial number."""
-    return PUMPS.get(serial_number, {"state": "unknown", "alarms": [], "battery": "unknown"})
-
-def create_support_ticket(serial_number,error_code,summary):
-    """Create a support ticket for the issue described by the user. Use when the user reports a problem that requires follow-up by the support team."""
-    if serial_number not in PUMPS:
-        return {"error": "Unknown serial number"}
-    if error_code not in ERROR_CODES:
-        return {"error": "Unknown error code"}
-    if error_code in [ticket["error_code"] for ticket in TICKETS]:
-        return {"error": "Ticket for this error code already exists"}
-    ticket = {"serial_number": serial_number, "error_code": error_code, "summary": summary}
-    TICKETS.append(ticket)
-    return {"ticket_id": len(TICKETS), "status": "created", "ticket": ticket}
-
 SYSTEM = ("You are a support assistant for an infusion-pump manufacturer, helping hospital staff. "
           "Answer only from tool results; never invent error codes, meanings or pump states. "
           "Never make a clinical safety decision, such as whether it is safe to keep infusing: "
@@ -96,6 +76,8 @@ def run_tool(name: str, args: dict) -> tuple[str, bool]:
                 return json.dumps({"error": f"Invalid code format {code!r}; expected like E-47"}), True
             if code not in ERROR_CODES:
                 return json.dumps({"error": f"{code} is not in the service manual"}), True
+            if  ERROR_CODES[code]['severity'] == 'critical':
+                return json.dumps({"error": f"{code} is a critical error code; {ERROR_CODES[code]['action']}"}), True
             return json.dumps(ERROR_CODES[code]), False
         if name == "get_pump_status":
             code = args.get("serial_number", "")
