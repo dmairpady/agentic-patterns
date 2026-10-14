@@ -9,7 +9,8 @@ each with tests that use fake LLMs so they run free in CI.
 | 01_memory | Conversation memory | Statelessness; why token cost grows each turn |
 | 02_chaining | Prompt chaining | Steps with a code gate and retry-with-feedback |
 | 03_routing | Routing + structured output | Safety pre-filter, prompt-injection defence, Pydantic validation, safe fallbacks |
-| 04_tool_use | Tool use | Tool schemas, parallel tool calls, argument validation, duplicate-safe write tool |.
+| 04_tool_use | Tool use | Tool schemas, parallel tool calls, argument validation, duplicate-safe write tool |
+| 05_agent_loop| ReAct loop | The agent loop from scratch: ReAct, stop conditions, step limits. |
 
 ## Run
 
