@@ -110,21 +110,20 @@ def run_tool(name: str, args: dict) -> tuple[str, bool]:
 def answer(message: str) -> str:
     client = Anthropic()
     messages = [{"role": "user", "content": message}]
-    try:
-        resp = client.messages.create(model=MODEL, max_tokens=1000, system=SYSTEM,
+    resp = client.messages.create(model=MODEL, max_tokens=1000, system=SYSTEM,
                                     tools=TOOLS, messages=messages)
-        if resp.stop_reason == "tool_use":
-            messages.append({"role": "assistant", "content": resp.content})   # the model's request
-            results = []
-            critical = []
-            for block in resp.content:                                        # EVERY tool call
-                if block.type == "tool_use":
-                    print(f"Tool call: {block.name}({json.dumps(block.input)})")
-                    output, is_error = run_tool(block.name, block.input)
-                    results.append({"type": "tool_result", "tool_use_id": block.id,
+    if resp.stop_reason == "tool_use":
+        messages.append({"role": "assistant", "content": resp.content})   # the model's request
+        results = []
+        critical = []
+        for block in resp.content:                                        # EVERY tool call
+            if block.type == "tool_use":
+                print(f"Tool call: {block.name}({json.dumps(block.input)})")
+                output, is_error = run_tool(block.name, block.input)
+                results.append({"type": "tool_result", "tool_use_id": block.id,
                                     "content": output, "is_error": is_error})
-                    if block.name == "lookup_error_code" and not is_error:
-                        info = json.loads(output)
+                if block.name == "lookup_error_code" and not is_error:
+                    info = json.loads(output)
                     if info["severity"] == "critical":
                         critical.append((block.input["error_code"], info))
 
@@ -137,12 +136,7 @@ def answer(message: str) -> str:
             resp = client.messages.create(model=MODEL, max_tokens=1000, system=SYSTEM,
                                         tools=TOOLS, messages=messages)
             if resp.stop_reason == "tool_use":
-                print("NOTE: the model wanted another tool call; handling that is Lesson 7")
-    except APIConnectionError as exc:
-        if exc.__cause__:
-            traceback.print_exception(exc.__cause__)
-        print("Underlying cause:", repr(exc.__cause__))
-        raise            
+                print("NOTE: the model wanted another tool call; handling that is Lesson 7")           
     return "".join(b.text for b in resp.content if b.type == "text")
 
 
