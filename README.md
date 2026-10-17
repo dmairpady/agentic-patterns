@@ -12,6 +12,7 @@ each with tests that use fake LLMs so they run free in CI.
 | 04_tool_use | Tool use | Tool schemas, parallel tool calls, argument validation, duplicate-safe write tool |
 | 05_agent_loop| ReAct loop | The agent loop from scratch: ReAct, stop conditions, step limits. |
 | 06_reflection | Reflection: generator and critic | Self-correcting generator |
+|.07_planning | Planning: plan-and-execute, replanning |Planner agent |
 ## Run
 
 ```bash
