@@ -1,6 +1,6 @@
 import json
 
-from reflection import FALLBACK, code_issues, reflect
+from reflection_agent import FALLBACK, code_issues, reflect
 
 # ---------- shared test data ----------
 
